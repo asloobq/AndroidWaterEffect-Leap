@@ -26,6 +26,10 @@ import jp.co.cyberagent.android.gpuimage.sample.GPUImageFilterTools.OnGpuImageFi
 import jp.co.cyberagent.android.gpuimage.sample.R;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -53,9 +57,14 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
 
         mGPUImageView = (GPUImageView) findViewById(R.id.gpuimage);
 
-        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        //Drawable water = getResources().getDrawable(R.drawable.water_over_coral_reef_303786);
+        //BitmapDrawable = getResources().getDrawable(R.drawable.water_over_coral_reef_303786);
+        Bitmap water = BitmapFactory.decodeResource(getResources(), R.drawable.water_over_coral_reef_303786);
+        mGPUImageView.setImage(water);
+
+        /*Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
         photoPickerIntent.setType("image/*");
-        startActivityForResult(photoPickerIntent, REQUEST_PICK_IMAGE);
+        startActivityForResult(photoPickerIntent, REQUEST_PICK_IMAGE);*/
     }
 
     @Override

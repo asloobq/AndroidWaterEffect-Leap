@@ -14,7 +14,10 @@ public class WaterRippleEffect extends GPUImageFilter {
 	 * Do one without touch, just use the center of the screen to show ripples.
 	 * */
 	
-	/*
+	/* Working of shader:
+	 * The effect calculates a "shifted texture coordinate" based on the
+	 * fragments distance from the origin of texture coordinate space.
+	 * 
 	 * gl_FragCoord = 
 	 *  is an input variable that contains the window relative coordinate (x, y, z, 1/w)
 	 *  values for the fragment.
@@ -25,13 +28,15 @@ public class WaterRippleEffect extends GPUImageFilter {
 			" \n" +
 			" uniform highp float time;\n" +
 			" uniform highp vec2 resolution;\n" +
+			//" uniform highp vec2 touch;\n" +
 			" uniform sampler2D inputImageTexture;\n" +
 			" \n" +
 			" void main(void) {\n" +
 			"		highp vec2 cPos = -1.0 + 2.0 * gl_FragCoord.xy / resolution.xy;\n" +
+			//"		cPos.x = cPos.x + touch.x; cPos.y = cPos.y + touch.y;" +
 			"		highp float cLength = length(cPos*time);\n" +
 			"		\n" +
-			"		highp vec2 uv = gl_FragCoord.xy/resolution.xy+(cPos/cLength)*cos(cLength*12.0-time*22.0)*0.03;\n" +
+			"		highp vec2 uv = gl_FragCoord.xy/resolution.xy+(cPos/cLength)*cos(cLength*12.0-time*4.0)*0.03;\n" +
 			"		highp vec3 col = texture2D(inputImageTexture,uv).xyz;\n" +
 			"		\n" +
 			"		gl_FragColor = vec4(col,1.0);\n" +
