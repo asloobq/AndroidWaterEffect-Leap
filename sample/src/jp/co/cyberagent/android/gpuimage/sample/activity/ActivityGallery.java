@@ -16,6 +16,8 @@
 
 package jp.co.cyberagent.android.gpuimage.sample.activity;
 
+import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES.GINGERBREAD;
 import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImage.OnPictureSavedListener;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
@@ -24,22 +26,30 @@ import jp.co.cyberagent.android.gpuimage.WaterRippleEffect;
 import jp.co.cyberagent.android.gpuimage.sample.GPUImageFilterTools;
 import jp.co.cyberagent.android.gpuimage.sample.GPUImageFilterTools.FilterAdjuster;
 import jp.co.cyberagent.android.gpuimage.sample.GPUImageFilterTools.OnGpuImageFilterChosenListener;
+import jp.co.cyberagent.android.gpuimage.sample.utils.CameraHelperBase;
+import jp.co.cyberagent.android.gpuimage.sample.utils.CameraHelperGB;
 import jp.co.cyberagent.android.gpuimage.sample.R;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Toast;
@@ -52,11 +62,24 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
     private GPUImageFilter mFilter;
     private FilterAdjuster mFilterAdjuster;
     private GPUImageView mGPUImageView;
+    private Point mWindowSize;
 
-    @Override
+    @SuppressLint("NewApi")
+	@Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
+
+        //Get height, width
+        mWindowSize = new Point();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.GINGERBREAD_MR1) {
+        	getWindowManager().getDefaultDisplay().getSize(mWindowSize);
+        } else {
+        	Display display = getWindowManager().getDefaultDisplay();
+        	mWindowSize.x = display.getWidth();
+        	mWindowSize.y = display.getHeight();
+        }
+        Log.v(DEBUG_TAG, "Window Size  = " + mWindowSize.x + "  = " + mWindowSize.y);
         //((SeekBar) findViewById(R.id.seekBar)).setOnSeekBarChangeListener(this);
         //findViewById(R.id.button_choose_filter).setOnClickListener(this);
         //findViewById(R.id.button_save).setOnClickListener(this);
@@ -72,7 +95,7 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
         photoPickerIntent.setType("image/*");
         startActivityForResult(photoPickerIntent, REQUEST_PICK_IMAGE);*/
 
-        switchFilterTo( new WaterRippleEffect(1920, 1200));
+        switchFilterTo( new WaterRippleEffect(mWindowSize.x, mWindowSize.y));
 
         mGPUImageView.setOnTouchListener(new OnTouchListener() {
 
@@ -85,7 +108,8 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
 			            Log.d(DEBUG_TAG,"Action was DOWN X = " + event.getX() + " | Y =" + event.getY());
 			        	//if(mFilter.getClass() == WaterRippleEffect.class) {
 					try {
-						((WaterRippleEffect)mFilter).setTouches(event.getX(), event.getY());
+						float points[] = convertFromAndroiSpaceToOpenGL(event.getX(), event.getY());
+						((WaterRippleEffect)mFilter).setTouches(points[0], points[1]);
 					} catch (NullPointerException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -192,5 +216,23 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
 
     private void handleImage(final Uri selectedImage) {
         mGPUImageView.setImage(selectedImage);
+    }
+
+    private float[] convertFromAndroiSpaceToOpenGL(float x, float y) {
+
+    	float newX, newY;
+    	float halfWidth = mWindowSize.x / 2;
+    	float halfHeight = mWindowSize.y / 2;
+    	newX = x - halfWidth;
+    	newY = y - halfHeight;
+    	if(newX != 0) {
+    		newX = newX / halfWidth;
+    	}
+    	if(newY != 0) {
+    		newY = newY / halfHeight;
+    	}
+    	newX *= -1;
+    	Log.v(DEBUG_TAG ,"newX = " + newX + "| newY = " + newY);
+    	return new float[] {newX, newY};
     }
 }
