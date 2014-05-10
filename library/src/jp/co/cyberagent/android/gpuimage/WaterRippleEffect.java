@@ -29,9 +29,9 @@ public class WaterRippleEffect extends GPUImageFilter {
 			" \n" +
 			" void main(void) {\n" +
 			"		highp vec2 cPos = -1.0 + 2.0 * gl_FragCoord.xy / resolution.xy;\n" +
-			"		highp float cLength = length(cPos);\n" +
+			"		highp float cLength = length(cPos*time);\n" +
 			"		\n" +
-			"		highp vec2 uv = gl_FragCoord.xy/resolution.xy+(cPos/cLength)*cos(cLength*12.0-time*4.0)*0.03;\n" +
+			"		highp vec2 uv = gl_FragCoord.xy/resolution.xy+(cPos/cLength)*cos(cLength*12.0-time*22.0)*0.03;\n" +
 			"		highp vec3 col = texture2D(inputImageTexture,uv).xyz;\n" +
 			"		\n" +
 			"		gl_FragColor = vec4(col,1.0);\n" +
@@ -69,7 +69,7 @@ public class WaterRippleEffect extends GPUImageFilter {
 	private float mTouchX;
 	private float mTouchY;
 	
-	private float mStartTime;
+	private long mStartTime;
 	private float mTimeUniform;
 	private int mTimeUniformLocation;
 	
@@ -78,6 +78,7 @@ public class WaterRippleEffect extends GPUImageFilter {
 	private int mResUniformLocation;
 	
 	private int count = 0;
+	private int mTimer = 1000;
 	private Random mRandom = new Random();
 	
 	private int mContrastLocation;
@@ -116,12 +117,18 @@ public class WaterRippleEffect extends GPUImageFilter {
 	}
 	
 	public void setUniforms() {
-		//mTimeUniform = (System.currentTimeMillis() - mStartTime) / 1000;
-		mTimeUniform = mRandom.nextFloat();
+		//mTimeUniform = Math.abs((mStartTime - System.currentTimeMillis())) / 1000;
+		mTimeUniform = (System.currentTimeMillis() - mStartTime) / 100;
+//		mTimeUniform = mRandom.nextFloat();
+//		mTimeUniform *= mTimer;
+//		if(mTimer > 0) {
+//			--mTimer;
+//		}
 		setTime(mTimeUniform);
 		setResolution(mResUniformX, mResUniformY);
 		if (++count % 100 == 0) {
-			Log.v(WaterRippleEffect.class.getName(), "setUniforms time ");
+			Log.v(WaterRippleEffect.class.getName(), "setUniforms time " + System.currentTimeMillis() 
+					+ "| time = " + mStartTime + "| time = "+ mTimeUniform);
 		}
 //		setFloat(mContrastLocation, mContrast);
 	}
