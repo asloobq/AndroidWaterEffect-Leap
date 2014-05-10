@@ -104,7 +104,7 @@ public class WaterRippleEffect extends GPUImageFilter {
 		mResUniformLocation  = GLES20.glGetUniformLocation(getProgram(), "resolution");
 //		mContrastLocation = GLES20.glGetUniformLocation(getProgram(), "contrast");
 		
-		mStartTime = System.currentTimeMillis();
+		mStartTime = 0;//System.currentTimeMillis();
 	}
 	
 	@Override
@@ -144,5 +144,9 @@ public class WaterRippleEffect extends GPUImageFilter {
 	
 	public void setResolution(final float resX, final float resY) {
 		setFloatVec2(mResUniformLocation, new float[] {resX, resY});
+	}
+
+	public void setTouches(final float touchX, final float touchY) {
+		mStartTime = System.currentTimeMillis();
 	}
 }
