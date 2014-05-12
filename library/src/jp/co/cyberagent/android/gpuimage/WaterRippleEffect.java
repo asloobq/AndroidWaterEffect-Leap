@@ -31,7 +31,7 @@ public class WaterRippleEffect extends GPUImageFilter {
 			"		highp vec2 cPos = -1.0 + 2.0 * gl_FragCoord.xy / resolution.xy;\n" +
 			"		highp float cLength = length(cPos*time);\n" +
 			"		\n" +
-			"		highp vec2 uv = gl_FragCoord.xy/resolution.xy+(cPos/cLength)*cos(cLength*12.0-time*22.0)*0.03;\n" +
+			"		highp vec2 uv = gl_FragCoord.xy/resolution.xy+(cPos/cLength)*cos(cLength*12.0-time*4.0)*0.03;\n" +
 			"		highp vec3 col = texture2D(inputImageTexture,uv).xyz;\n" +
 			"		\n" +
 			"		gl_FragColor = vec4(col,1.0);\n" +
@@ -99,7 +99,7 @@ public class WaterRippleEffect extends GPUImageFilter {
 		mResUniformLocation  = GLES20.glGetUniformLocation(getProgram(), "resolution");
 //		mContrastLocation = GLES20.glGetUniformLocation(getProgram(), "contrast");
 		
-		mStartTime = System.currentTimeMillis();
+		mStartTime = 0;//System.currentTimeMillis();
 	}
 	
 	@Override
@@ -139,5 +139,9 @@ public class WaterRippleEffect extends GPUImageFilter {
 	
 	public void setResolution(final float resX, final float resY) {
 		setFloatVec2(mResUniformLocation, new float[] {resX, resY});
+	}
+	
+	public void setTouches(final float touchX, final float touchY) {
+		 mStartTime = System.currentTimeMillis();
 	}
 }

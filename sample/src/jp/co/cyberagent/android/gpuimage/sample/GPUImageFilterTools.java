@@ -344,7 +344,7 @@ public class GPUImageFilterTools {
             public void adjust(final int percentage) {
             	//TODO do nothing for now
                 //getFilter().setSharpness(range(percentage, -4.0f, 4.0f));
-            	getFilter().setUniforms();
+            	getFilter().setTouches(0, 0);
             }
         }
         
