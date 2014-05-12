@@ -58,9 +58,9 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
-        ((SeekBar) findViewById(R.id.seekBar)).setOnSeekBarChangeListener(this);
-        findViewById(R.id.button_choose_filter).setOnClickListener(this);
-        findViewById(R.id.button_save).setOnClickListener(this);
+//        ((SeekBar) findViewById(R.id.seekBar)).setOnSeekBarChangeListener(this);
+//        findViewById(R.id.button_choose_filter).setOnClickListener(this);
+//        findViewById(R.id.button_save).setOnClickListener(this);
 
         mGPUImageView = (GPUImageView) findViewById(R.id.gpuimage);
 
@@ -152,9 +152,9 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
 
                 });
                 break;
-            case R.id.button_save:
-                saveImage();
-                break;
+//            case R.id.button_save:
+//                saveImage();
+//                break;
 
             default:
                 break;
