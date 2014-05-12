@@ -25,10 +25,12 @@ public class WaterRippleEffect extends GPUImageFilter {
 			" \n" +
 			" uniform highp float time;\n" +
 			" uniform highp vec2 resolution;\n" +
+			" uniform highp vec2 touch;\n" +
 			" uniform sampler2D inputImageTexture;\n" +
 			" \n" +
 			" void main(void) {\n" +
 			"		highp vec2 cPos = -1.0 + 2.0 * gl_FragCoord.xy / resolution.xy;\n" +
+			"		cPos.x = cPos.x + touch.x; cPos.y = cPos.y + touch.y;" +
 			"		highp float cLength = length(cPos*time);\n" +
 			"		\n" +
 			"		highp vec2 uv = gl_FragCoord.xy/resolution.xy+(cPos/cLength)*cos(cLength*12.0-time*4.0)*0.03;\n" +
@@ -65,9 +67,6 @@ public class WaterRippleEffect extends GPUImageFilter {
             "     \n" + 
             "     gl_FragColor = vec4(((textureColor.rgb - vec3(0.5)) * contrast + vec3(0.5)), textureColor.w);\n" + 
             " }";*/
-	private int mTouchLocation;
-	private float mTouchX;
-	private float mTouchY;
 	
 	private long mStartTime;
 	private float mTimeUniform;
@@ -76,6 +75,10 @@ public class WaterRippleEffect extends GPUImageFilter {
 	private float mResUniformX;
 	private float mResUniformY;
 	private int mResUniformLocation;
+	
+	private float mTouchUniformX;
+	private float mTouchUniformY;
+	private int mTouchUniformLocation;
 	
 	private int count = 0;
 	private int mTimer = 1000;
@@ -89,6 +92,8 @@ public class WaterRippleEffect extends GPUImageFilter {
 			mResUniformX = resX;
 			mResUniformY = resY;
 			mContrast = 1.8f;
+			mTouchUniformX = 0.0f;
+			mTouchUniformY = 0.0f;
 	}
 
 	@Override
@@ -97,6 +102,7 @@ public class WaterRippleEffect extends GPUImageFilter {
 		//Uniform names initialized here
 		mTimeUniformLocation = GLES20.glGetUniformLocation(getProgram(), "time");
 		mResUniformLocation  = GLES20.glGetUniformLocation(getProgram(), "resolution");
+		mTouchUniformLocation  = GLES20.glGetUniformLocation(getProgram(), "touch");
 //		mContrastLocation = GLES20.glGetUniformLocation(getProgram(), "contrast");
 		
 		mStartTime = 0;//System.currentTimeMillis();
@@ -143,5 +149,6 @@ public class WaterRippleEffect extends GPUImageFilter {
 	
 	public void setTouches(final float touchX, final float touchY) {
 		 mStartTime = System.currentTimeMillis();
+		 setFloatVec2(mTouchUniformLocation, new float[] {touchX, touchY});
 	}
 }
