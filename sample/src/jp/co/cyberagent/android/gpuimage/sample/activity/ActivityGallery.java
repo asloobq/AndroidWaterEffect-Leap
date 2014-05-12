@@ -20,6 +20,7 @@ import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImage.OnPictureSavedListener;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageView;
+import jp.co.cyberagent.android.gpuimage.WaterRippleEffect;
 import jp.co.cyberagent.android.gpuimage.sample.GPUImageFilterTools;
 import jp.co.cyberagent.android.gpuimage.sample.GPUImageFilterTools.FilterAdjuster;
 import jp.co.cyberagent.android.gpuimage.sample.GPUImageFilterTools.OnGpuImageFilterChosenListener;
@@ -29,8 +30,12 @@ import android.content.Intent;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.support.v4.view.MotionEventCompat;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Toast;
@@ -42,6 +47,7 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
     private GPUImageFilter mFilter;
     private FilterAdjuster mFilterAdjuster;
     private GPUImageView mGPUImageView;
+    protected static final String DEBUG_TAG = ActivityGallery.class.getName();
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
@@ -56,6 +62,46 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
         Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
         photoPickerIntent.setType("image/*");
         startActivityForResult(photoPickerIntent, REQUEST_PICK_IMAGE);
+        
+        switchFilterTo( new WaterRippleEffect(1920, 1200));
+
+        mGPUImageView.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				int action = MotionEventCompat.getActionMasked(event);
+
+			    switch(action) {
+			        case (MotionEvent.ACTION_DOWN) :
+			            Log.d(DEBUG_TAG,"Action was DOWN X = " + event.getX() + " | Y =" + event.getY());
+			        	//if(mFilter.getClass() == WaterRippleEffect.class) {
+					try {
+						((WaterRippleEffect)mFilter).setTouches(event.getX(), event.getY());
+					} catch (NullPointerException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			        	//}
+
+			            return true;
+			        case (MotionEvent.ACTION_MOVE) :
+			            Log.d(DEBUG_TAG,"Action was MOVE");
+			            return true;
+			        case (MotionEvent.ACTION_UP) :
+			            Log.d(DEBUG_TAG,"Action was UP");
+			            return true;
+			        case (MotionEvent.ACTION_CANCEL) :
+			            Log.d(DEBUG_TAG,"Action was CANCEL");
+			            return true;
+			        case (MotionEvent.ACTION_OUTSIDE) :
+			            Log.d(DEBUG_TAG,"Movement occurred outside bounds " +
+			                    "of current screen element");
+			            return true;
+			        default :
+			            return true;
+			    }
+			}
+		});
     }
 
     @Override
