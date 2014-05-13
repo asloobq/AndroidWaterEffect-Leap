@@ -25,13 +25,22 @@ import jp.co.cyberagent.android.gpuimage.sample.GPUImageFilterTools;
 import jp.co.cyberagent.android.gpuimage.sample.GPUImageFilterTools.FilterAdjuster;
 import jp.co.cyberagent.android.gpuimage.sample.GPUImageFilterTools.OnGpuImageFilterChosenListener;
 import jp.co.cyberagent.android.gpuimage.sample.R;
+import jp.co.cyberagent.android.gpuimage.sample.service.MessengerService;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
 import android.view.Display;
@@ -52,6 +61,8 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
     private GPUImageView mGPUImageView;
     protected static final String DEBUG_TAG = ActivityGallery.class.getName();
     private Point mWindowSize;
+	private Messenger mService = null;
+	private boolean mIsBound;
 
     @SuppressLint("NewApi")
     @Override
@@ -61,7 +72,7 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
 //        ((SeekBar) findViewById(R.id.seekBar)).setOnSeekBarChangeListener(this);
 //        findViewById(R.id.button_choose_filter).setOnClickListener(this);
 //        findViewById(R.id.button_save).setOnClickListener(this);
-
+		doBindService();
         mGPUImageView = (GPUImageView) findViewById(R.id.gpuimage);
 
         Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
@@ -163,6 +174,12 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
     }
 
     @Override
+	protected void onDestroy() {
+		super.onDestroy();
+		doUnbindService();
+	}
+
+	@Override
     public void onPictureSaved(final Uri uri) {
         Toast.makeText(this, "Saved: " + uri.toString(), Toast.LENGTH_SHORT).show();
     }
@@ -218,4 +235,97 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
     	Log.v(DEBUG_TAG ,"newX = " + newX + "| newY = " + newY);
     	return new float[] {newX, newY};
     }
+
+    /**
+	 * Handler of incoming messages from service.
+	 */
+	static class IncomingHandler extends Handler {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MessengerService.MSG_SET_VALUE:
+				float[] reading = (float[]) msg.obj;
+				//TODO do something with values
+				//mRenderer.setValues(reading[0], reading[1], reading[2], reading[3]);
+				break;
+			default:
+				super.handleMessage(msg);
+			}
+		}
+	}
+
+	/**
+	 * Target we publish for clients to send messages to IncomingHandler.
+	 */
+	final Messenger mMessenger = new Messenger(new IncomingHandler());
+
+	/**
+	 * Class for interacting with the main interface of the service.
+	 */
+	private ServiceConnection mConnection = new ServiceConnection() {
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			// This is called when the connection with the service has been
+			// established, giving us the service object we can use to
+			// interact with the service. We are communicating with our
+			// service through an IDL interface, so get a client-side
+			// representation of that from the raw service object.
+			mService = new Messenger(service);
+			Log.d("TAG", "Attached.");
+
+			// We want to monitor the service for as long as we are
+			// connected to it.
+			try {
+				Message msg = Message.obtain(null,
+						MessengerService.MSG_REGISTER_CLIENT);
+				msg.replyTo = mMessenger;
+				mService.send(msg);
+			} catch (RemoteException e) {
+				// In this case the service has crashed before we could even
+				// do anything with it; we can count on soon being
+				// disconnected (and then reconnected if it can be restarted)
+				// so there is no need to do anything here.
+			}
+		}
+
+		public void onServiceDisconnected(ComponentName className) {
+			// This is called when the connection with the service has been
+			// unexpectedly disconnected -- that is, its process crashed.
+			mService = null;
+			Log.d("TAG", "Disconnected.");
+		}
+	};
+
+	void doBindService() {
+		// Establish a connection with the service. We use an explicit
+		// class name because there is no reason to be able to let other
+		// applications replace our component.
+		bindService(new Intent(ActivityGallery.this,
+				MessengerService.class), mConnection, Context.BIND_AUTO_CREATE);
+		mIsBound = true;
+		Log.d("TAG", "Binding.");
+	}
+
+	void doUnbindService() {
+		if (mIsBound) {
+			// If we have received the service, and hence registered with
+			// it, then now is the time to unregister.
+			if (mService != null) {
+				try {
+					Message msg = Message.obtain(null,
+							MessengerService.MSG_UNREGISTER_CLIENT);
+					msg.replyTo = mMessenger;
+					mService.send(msg);
+				} catch (RemoteException e) {
+					// There is nothing special we need to do if the service
+					// has crashed.
+				}
+			}
+
+			// Detach our existing connection.
+			unbindService(mConnection);
+			mIsBound = false;
+			Log.d("TAG", "Unbinding.");
+		}
+	}
+
 }

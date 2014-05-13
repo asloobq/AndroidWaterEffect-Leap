@@ -32,6 +32,8 @@
             android:name="jp.co.cyberagent.android.gpuimage.sample.activity.ActivityCamera"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
+        <service android:name="jp.co.cyberagent.android.gpuimage.sample.service.MessengerService">
+        </service>
     </application>
 
 </manifest>
