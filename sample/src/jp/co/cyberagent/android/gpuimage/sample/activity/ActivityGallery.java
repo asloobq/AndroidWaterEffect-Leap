@@ -64,6 +64,8 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
 	private Messenger mService = null;
 	private boolean mIsBound;
 
+	private static Point mLeapSize = new Point(250, 500);
+
     @SuppressLint("NewApi")
     @Override
     public void onCreate(final Bundle savedInstanceState) {
@@ -103,7 +105,7 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
 			            Log.d(DEBUG_TAG,"Action was DOWN X = " + event.getX() + " | Y =" + event.getY());
 			        	//if(mFilter.getClass() == WaterRippleEffect.class) {
 						try {
-							float points[] = convertFromAndroiSpaceToOpenGL(event.getX(), event.getY());
+							float points[] = convertFromAndroidSpaceToOpenGL(event.getX(), event.getY());
 							((WaterRippleEffect)mFilter).setTouches(points[0], points[1]);
 						} catch (NullPointerException e) {
 							// TODO Auto-generated catch block
@@ -218,7 +220,7 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
         mGPUImageView.setImage(selectedImage);
     }
 
-    private float[] convertFromAndroiSpaceToOpenGL(float x, float y) {
+    private float[] convertFromAndroidSpaceToOpenGL(float x, float y) {
 
     	float newX, newY;
     	float halfWidth = mWindowSize.x / 2;
@@ -236,10 +238,36 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
     	return new float[] {newX, newY};
     }
 
+    private static float[] convertFromLeapSpaceToOpenGL(float x, float y) {
+
+    	float newX = 0, newY;
+    	if(x != 0) {
+    		newX = x / mLeapSize.x;
+    	}
+
+    	float halfHeight = (mLeapSize.y / 2);
+
+    	newY = y - halfHeight;
+    	if(newY != 0) {
+    		newY = newY / halfHeight;
+    	}
+    	newX *= -1;
+    	newY *= -1;
+    	Log.v(DEBUG_TAG ,"newX = " + newX + "| newY = " + newY + "| y = " + y + "| halfheight = " + halfHeight);
+    	return new float[] {newX, newY};
+    }
+
     /**
 	 * Handler of incoming messages from service.
 	 */
 	static class IncomingHandler extends Handler {
+		private ActivityGallery mActivityGallery;
+
+		public IncomingHandler(ActivityGallery activityGallery) {
+			super();
+			this.mActivityGallery = activityGallery;
+		}
+
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -247,6 +275,13 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
 				float[] reading = (float[]) msg.obj;
 				//TODO do something with values
 				//mRenderer.setValues(reading[0], reading[1], reading[2], reading[3]);
+				try {
+					float points[] = convertFromLeapSpaceToOpenGL(reading[0], reading[1]);
+					((WaterRippleEffect) mActivityGallery.mFilter).setTouches(points[0], points[1]);
+				} catch (NullPointerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				break;
 			default:
 				super.handleMessage(msg);
@@ -257,7 +292,7 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
 	/**
 	 * Target we publish for clients to send messages to IncomingHandler.
 	 */
-	final Messenger mMessenger = new Messenger(new IncomingHandler());
+	final Messenger mMessenger = new Messenger(new IncomingHandler(this));
 
 	/**
 	 * Class for interacting with the main interface of the service.

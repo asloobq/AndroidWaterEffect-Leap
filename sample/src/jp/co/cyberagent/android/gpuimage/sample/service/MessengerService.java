@@ -114,8 +114,8 @@ public class MessengerService extends Service {
 
 			try {
 				Log.d("TAG", "connecting to server");
-				s = new Socket("192.168.1.10", 8090);
-				//s = new Socket("149.125.21.160", 8090);
+				//s = new Socket("192.168.1.10", 8090);
+				s = new Socket("149.125.113.227", 8090);
 				Log.d("TAG", "connected to server:: " + s.isConnected());
 
 				BufferedReader input = new BufferedReader(
@@ -133,35 +133,35 @@ public class MessengerService extends Service {
 //					}
 					try {
 						if (line.contains(":")) {
-							String[] rots = line.split(":")[1].split(",");
-							String[] vals = line.split(":")[2].split(",");
+							//String[] rots = line.split(":")[1].split(",");
+							String[] vals = line.split(":")[1].split(",");
 							float[] inputPosition = { Float.parseFloat(vals[0]),
 									Float.parseFloat(vals[1]),
 									Float.parseFloat(vals[2]) };
-							float[] smoothVals = applyLPF(inputPosition,
-									positionOutput);
+							//float[] smoothVals = applyLPF(inputPosition,
+							//		positionOutput);
 
-							inputPosition = new float[] {
-									Float.parseFloat(rots[0]),
-									Float.parseFloat(rots[1]),
-									Float.parseFloat(rots[2]) };
+//							inputPosition = new float[] {
+//									Float.parseFloat(rots[0]),
+//									Float.parseFloat(rots[1]),
+//									Float.parseFloat(rots[2]) };
 
-							float[] smoothRots = applyLPF(inputPosition,
-									rotationOutput);
-							float x = smoothVals[0];
-							float y = smoothVals[1];
+//							float[] smoothRots = applyLPF(inputPosition,
+//									rotationOutput);
+//							float x = smoothVals[0];
+//							float y = smoothVals[1];
+//
+//							if (y < 200) {
+//								y = 200 - y;
+//							} else {
+//								y = y - 200;
+//							}
+//
+//							float z = smoothVals[2];
 
-							if (y < 200) {
-								y = 200 - y;
-							} else {
-								y = y - 200;
-							}
-
-							float z = smoothVals[2];
-
-							float[] obj = { x, y, z, smoothRots[0] };
+							//float[] obj = { x, y, z, smoothRots[0] };
 							mMessenger.send(Message
-									.obtain(null, MSG_SET_VALUE, obj));
+									.obtain(null, MSG_SET_VALUE, inputPosition));
 
 						}
 					} catch (NumberFormatException e) {
