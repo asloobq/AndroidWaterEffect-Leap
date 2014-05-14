@@ -34,6 +34,7 @@ public class WaterRippleEffect extends GPUImageFilter {
 			"		highp float cLength = length(cPos*time);\n" +
 			"		\n" +
 			"		highp vec2 uv = gl_FragCoord.xy/resolution.xy+(cPos/cLength)*cos(cLength*12.0-time*4.0)*0.03;\n" +
+			"		uv.y =1.0f - uv.y;\n" +
 			"		highp vec3 col = texture2D(inputImageTexture,uv).xyz;\n" +
 			"		\n" +
 			"		gl_FragColor = vec4(col,1.0);\n" +
