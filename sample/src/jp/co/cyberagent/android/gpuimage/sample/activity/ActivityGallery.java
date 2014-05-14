@@ -220,7 +220,7 @@ public class ActivityGallery extends Activity implements OnSeekBarChangeListener
         mGPUImageView.setImage(selectedImage);
     }
 
-    private float[] convertFromAndroidSpaceToOpenGL(float x, float y) {
+    float[] convertFromAndroidSpaceToOpenGL(float x, float y) {
 
     	float newX, newY;
     	float halfWidth = mWindowSize.x / 2;
